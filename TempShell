@@ -8,7 +8,7 @@
 #
 
 ARG=1
-AUTHOR=""
+AUTHOR=
 DATE=$(date "+%d\/%m\/%Y")
 
 if [ "$#" -ne $ARG ] ; then
@@ -18,7 +18,7 @@ if [ "$#" -ne $ARG ] ; then
 elif [ -f $1 ] ; then
 	echo "Le fichier $1 existe déjà!"
 	exit 1
-elif [ -z $AUTHOR ] ; then
+elif [ ! -n $(echo $AUTHOR | tr -d [[:space:]]) ] ; then
 	echo "La variable \$AUTHOR n'est pas initialisée."
 	exit 1
 fi
@@ -43,7 +43,8 @@ ENDFILE
 
 sed -i -e "s/DATE/$DATE/g" $FILENAME
 sed -i -e "s/AUTHOR/$AUTHOR/g" $FILENAME
-sed -i -e "s/FILENAME/$FILENAME/g $FILENAME
+sed -i -e "s/FILENAME/$FILENAME/g" $FILENAME
 
 chmod +x $FILENAME
 exit 0
+
