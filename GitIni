@@ -1,0 +1,54 @@
+#!/bin/bash
+#
+# Author: Cyril GENISSON
+# Created: 07/10/2023
+# Updated: 07/10/2023
+#
+# Description: Crée un nouveau projet Github et le clone dans le répertoire
+# de travail. Installe au besoin github-cli et git au besoin (pour une Debian).
+#
+
+# Activation du mode debug, à décommenter qand le script est opérationnel
+#set -x
+
+#################################################
+#       	    Variables globales	           	#
+#################################################
+WorkingDir=$HOME/github/
+ProjectName=$1
+LICENSE='gpl-3.0'
+
+GhOK=$(dpkg-query --status gh | grep ^Status | cut -d ' ' -f3)
+GitOK=$(dpkg-query --status git | grep ^Status | cut -d ' ' -f3)
+
+if [ ! -d $WorkingDir ] ; then
+    mkdir -p $WorkingDir
+fi
+
+if [ $GitOK != 'ok' ] ; then
+    echo "Installation du paquet git..."
+    sudo apt-get install git -y
+fi
+
+if [ $GhOK != 'ok' ] ; then
+	echo "Installation du paquet gh..."
+	sudo apt-get install gh -y
+	echo
+	echo "A présent, lancer la configuration de l'authentification"
+	echo "gh auth login"
+	echo "Terminé"
+	exit 0
+fi
+
+if [ -z $ProjectName ] ; then
+	echo "Utilisation du programme: $0 ProjectName"
+	echo "Fin du programme."
+	exit 1
+elif [ -d $WorkingDir$ProjectName ] ; then
+	echo "Un projet du même nom \"$ProjectName\" existe déjà!"
+	echo "Fin du programme."
+	exit 1
+else
+	cd $WorkingDir
+	gh repo create $1 --clone --license $LICENSE --public
+fi

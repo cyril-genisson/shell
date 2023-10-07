@@ -8,7 +8,7 @@
 #
 
 ARG=1
-AUTHOR=
+AUTHOR=""
 DATE=$(date "+%d\/%m\/%Y")
 
 if [ "$#" -ne $ARG ] ; then
