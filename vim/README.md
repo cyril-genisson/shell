@@ -8,4 +8,5 @@ Enfin lancer vim et en mode commande taper pour installer les plugins ALE et NER
 ```VIM
 :PlugInstall
 ```
-
+Evidemment bien d'autres plugins sont installables en fonction des goûts et des besoins
+de chacun.
