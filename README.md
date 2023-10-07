@@ -14,7 +14,7 @@ dans le répertoire de travail courant ~/github/
 Il installe au cas où les paquets git et gh (github-cli).
 
 Avant de lancer ce script pour la première fois il est préférable d'avoir
-créé un compte GitHub d'avoir généré ses clefs ssh (avec SshKeygen par exemple).
+créé un compte Github et d'avoir généré ses clefs ssh (avec SshKeygen par exemple).
 
 ```bash
 GitIni ProjectName
