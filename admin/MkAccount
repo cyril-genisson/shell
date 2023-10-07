@@ -1,0 +1,121 @@
+#!/bin/bash
+#
+# Author: Cyril GENISSON
+# Created: 07/10/2023
+# Updated: 07/10/2023
+#
+# Description: Permet de créer l'ensemble des comptes  des nouveaux utilisateurs et leur répertoire $HOME
+# à partir d'un fichier csv puis génère un mot de passe aléatoire pour leur première connexion.
+# Enfin, il envoie un mail à chaque utilistateur avec ses paramètres connexions.
+
+# Option pour le debug
+set -ux
+
+local NEWUSERFILE=""  # Path du fichier CSV
+local DOMAIN=laplateforme.io
+local LOGREPORT="$HOME/creatusers"
+local MAILDIR="$LOGREPORT/mailusers"
+local DATE=$(date +"%d%m%Y")
+local HOUR=$(date +"%H%M%S")
+local SAVE="/tmp/CreatelNewUsers_$DATE_$HOUR.tar.bz2"
+local EXPMAIL='no-reply@laplateforme.io'
+local VERBOSE="n"
+
+if [ ! -f $NEWUSERFILE ] || [ -z $0 ] ; then
+    echo "Rien a faire."
+    exit 0
+fi
+
+if [  ! -d $LOGREPORT ]; then
+	mkdir -p $MAILDIR
+else
+    mkdir $MAILDIR
+fi
+
+cat > $MAILDIR/MAILUSER << ENDMAILUSER
+<!doctype html>
+<html lang="fr">
+<head><meta charset="utf-8"></head>
+<body>
+<p>Bonjour,</p>
+<p>Ceci est un mail automatique, Prière de ne pas répondre.</p>
+<p><U>intranet LaPlateforme:</U> <a href="intra.laplateforme.io" target="_blanck"><strong>intra.laplateforme.io</strong></a></p>
+
+
+<p>Veuillez trouver ci-dessous vos identifiants de connexions
+pour accéder au réseau interne de LaPlateforme.io:
+<ul>
+<li><U>Nom d'utilisateur:</U> <strong>USERNAME</strong>
+<li><U>Mot de passe:</U> <strong>PASSWORD</strong>
+</ul>
+</p>
+<p> Bien cordialement <p>
+<p> Administration <a href="https://www.laplateforme.io" target="_blanck">LaPlateforme.io</a><p>
+
+</body>
+</html>
+ENDMAILUSER
+
+#
+# Le fichier csv est composé de trois champs
+# Nom,Prénom,Groupe
+#
+
+for ENTRY in $(cat $NEWUSERFILE | grep -v ^NOM)
+do
+	LASTNAME=$(echo $ENTRY | cut -d, -f1)
+	FIRSTNAME=$(echo $ENTRY | cut -d, -f2)
+	GROUPE=$(echo $ENTRY | cut -d, -f3)
+	
+	# Nettoyage des caractères accentués pour la génération du nom d'utilisateur
+	NORMLAST=$(echo $LASTNAME | sed 'y/àâçéèëêïîöôùüûÀÇÉÈËÊÏÎÖÔÙÜÛ/aaceeeeiioouuuACEEEEIIOOUUU/')
+	NORMFIRST=$(echo $FIRSTNAME | sed 'y/àâçéèëêïîöôùüûÀÇÉÈËÊÏÎÖÔÙÜÛ/aaceeeeiioouuuACEEEEIIOOUUU/')
+	
+	FIRSTINITIAL=$(echo $NORMFIRST | cut -c 1 | tr 'A-Z' 'a-z')
+	LOWERLASTNAME=$(echo $NORMLAST | tr -d [[:space:]] | tr -d \' | tr 'A-Z' 'a-z')
+	
+	ACCTNAME=$FIRSTINITIAL$LOWERLASTNAME
+	
+	# Tests pour doublons et conflits
+	ACCTEXIST=''
+	ACCTEXISTNAME=''
+	
+	id $ACCTNAME &> /dev/null
+	
+	if [ $? -eq 0 ]; then
+		ACCTEXIST=y
+		ACCTEXISTNAME="$(grep ^ACCTNAME: /etc/passwd | cut -f5 -d:)"
+	fi
+	
+	if [ "$ACCTEXIST" = 'y' ] && [ "$ACCTEXISTNAME" = "&FIRSTNAME &LASTNAME" ]; then
+		echo "$ACCTNAME":"$FIRSTNAME $LASTNAME" >> $LOGREPORT/doublons.cvs
+	elif [ "$ACCTEXIST" = 'y' ]; then
+		echo "$ACCTNAME:$FIRSTNAME $LASTNAME" >> $LOGREPORT/conflits.cvs
+	else
+		# Génération d'un mot de passe alphanumériqe aléatoire de 10 caractères
+		PASSWORD=$(cat /dev/urandom | tr -dc [:alnum:] | head -c10)
+		
+		# Création du compte et affectation au groupe
+		# Décommenter les 3 lignes suivantes pour la création des utilisateurs
+		useradd -m -c "$FIRSTNAME $LASTNAME" -s /bin/bash $ACCTNAME
+		usermod -aG $GROUPE $ACCTNAME
+		echo $PASSWORD | password --stdin $ACCTNAME &> /dev/null
+		
+		if [ "$VERBOSE" = "y" ]; then
+			echo "Création de $ACCTNAME"
+		fi		
+		
+		# Préparation du mail avec les paramètres de connexion
+		cp $MAILDIR/MAILUSER  $MAILDIR/$ACCTNAME
+		sed -i -e "s/USERNAME/$ACCTNAME/g" $MAILDIR/$ACCTNAME
+		sed -i -e "s/PASSWORD/$ACCTNAME/g" $MAILDIR/$ACCTNAME
+		
+        # Envoi de l'email à chaque utilisateur
+		cat $ACCTNAME | mail -s "Vos paramètres d'accès LaPlateforme.io" $ACCTNAME@$DOMAIN &> /dev/null
+	fi	
+done
+
+# Archivage des logs de création
+# @ finir pour plus tard même si ce n'est pas trop long
+tar -cvjpf $SAVE $LOGREPORT
+rm -fR $MAILDIR

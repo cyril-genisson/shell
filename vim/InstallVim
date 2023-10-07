@@ -1,0 +1,50 @@
+#!/bin/bash
+#
+# Author: Cyril GENISSON
+# Created: 06/10/2023
+# Updated: 06/10/2023
+#
+# Description: installe l'éditeur Vim et une configuration personnalisée.
+#
+
+# Activation du mode debug, à commenter qand le script est opérationnel
+#set -ux
+SAVEDIR=$HOME/VIM_BACKUP
+SAVE=n
+VimOK=$(dpkg-query --status vim | grep ^Status | cut -d ' ' -f3)
+
+if [ -d $SAVEDIR ] ; then
+    rm -fR $SAVEDIR
+fi
+
+if [ -e ~/.vimrc ] ; then
+    mkdir $SAVEDIR
+    mv -f  ~/.vimrc $SAVEDIR/.
+    SAVE=y
+fi
+
+if [ -d ~/.vim ] ; then
+    mv -f  ~/.vim $SAVEDIR
+fi
+
+if [ $VimOK != 'ok' ] ; then
+    echo "Installatation de l'éditeur Vim..."
+    sudo apt-get install vim -y
+    echo
+fi
+
+echo 'Copie du fichier .vimrc'
+cp vimrc ~/.vimrc
+echo "Création de l'arborescence ./vim"
+mkdir -p ~/.vim/{autoload,colors,backup,plugged}
+
+echo "Téléchargement de plug"
+curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+
+
+if [ $SAVE = y ] ; then
+    echo "Vos fichiers de configurations initiaux ont étaient sauvegardées: $SAVEDIR"
+fi
+echo ""
+echo "Suivre les instructions du README pour finaliser l'installation"
+echo "Fin de l'installation."

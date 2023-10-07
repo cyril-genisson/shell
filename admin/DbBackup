@@ -1,0 +1,60 @@
+#!/bin/bash
+#
+# Author: Cyril GENISSON
+# Created: 07/10/2023
+# Updated: 07/10/2023
+#
+# Description: petit script permettant de sauvegarder l'ensembles des bases
+# de données d'un serveur MySQL/MariaDB
+
+# set -ux
+
+#
+# Paramètres à définir
+#
+DBUSER=
+PASSWD=
+EMAIL=
+
+FMTOPTIONS='--skip-column-names -E'
+COMMAND='SHOW DATABASES'
+BACKUPDIR=/dbbackup
+REPORT=$BACKUPDIR/report_$(date +%d%m%Y_%H%M%S).txt
+
+if [ -z $DBUSER ] & [ -z $PASSDB ] & [ -z $EMAIL ] ; then
+    echo "Veuiller personnaliser votre script avant de l'excécuter."
+    exit 1
+fi
+
+if [ ! -d $BACKUPDIR ] ; then
+	mkdir $BACKUPDIR
+fi
+
+for DBNAME in $(mysql $FMTOPTIONS -u $DBUSER -p $PASSWD -e "$COMMAND" | grep -v ^* | grep -v information_schema | grep -v performance_schema)
+do
+        echo "Backing up \"$DBNAME\""
+        mysqldump -u $DBUSER -p $PASSWD $DBNAME > $BACKUPDIR/$DBNAME.dump
+done
+
+# Génération du rapport de sauvegarde
+for DBDUMP in $BACKUPDIR/*
+do
+        SIZE=$(stat --printf "%s\n" $DBDUMP)
+        TOTAL =$[ $TOTAL + $SIZE ]
+done
+
+echo
+echo "**********************************************************************" >> $REPORT
+echo "              Rapport Save DB du $(date "+%d/%m/%Y")" >> $REPORT
+echo "**********************************************************************" >> $REPORT
+echo "" >> $REPORT
+
+for DBDUMP in $BACKUPDIR/*
+do
+        SIZE=$(stat --printf "%s\n" $DBDUMP)
+        echo "$DBDUMP,$SIZE,$[ 100 * $SIZE / $TOTAL ]%" >> $REPORT
+done
+
+# Envoie le rapport par mail à l'administrateur
+cat $REPORT | mail -s "Rapport des dumps DATABASES" $EMAIL &> /dev/null
+

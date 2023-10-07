@@ -1,0 +1,49 @@
+#!/bin/bash
+#
+# Author: Cyril GENISSON
+# Created: 07/10/2023
+# Updated: 07/10/2023
+#
+# Description: Crée un template pour faire des scripts shells
+#
+
+ARG=1
+AUTHOR=
+DATE=$(date "+%d\/%m\/%Y")
+
+if [ "$#" -ne $ARG ] ; then
+	echo "Usage: $0 newscrpt"
+	echo $1
+	exit 1
+elif [ -f $1 ] ; then
+	echo "Le fichier $1 existe déjà!"
+	exit 1
+elif [ -z $AUTHOR ] ; then
+	echo "La variable \$AUTHOR n'est pas initialisée."
+	exit 1
+fi
+
+FILENAME=$1
+
+cat > $FILENAME << ENDFILE
+#!/bin/bash
+#
+# Author: AUTHOR
+# Created: DATE
+# Updated: DATE
+#
+# Nom du script: FILENAME
+# Description: 
+#
+
+# Activation du mode debug, à commenter quand le script est opérationnel.
+set -ux
+
+ENDFILE
+
+sed -i -e "s/DATE/$DATE/g" $FILENAME
+sed -i -e "s/AUTHOR/$AUTHOR/g" $FILENAME
+sed -i -e "s/FILENAME/$FILENAME/g $FILENAME
+
+chmod +x $FILENAME
+exit 0
