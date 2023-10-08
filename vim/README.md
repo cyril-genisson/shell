@@ -4,7 +4,7 @@ de Brandon Wallace du 2 juin 2021 [article](https://freecodecamp.org/news/vimrc-
 
 Pour l'installer correctement excécutez le script d'installation: **InstallVim**
 
-Enfin lancer vim et en mode commande taper pour installer les plugins ALE et NERDTree:
+Enfin lancer vim et en mode commande installez les plugins ALE et NERDTree:
 ```VIM
 :PlugInstall
 ```
