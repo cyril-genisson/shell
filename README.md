@@ -29,6 +29,10 @@ SshKeygen KeyName
 ```
 [![asciicast](https://asciinema.org/a/PRyHaUEEju5RXcoVlHInYMtmt.svg)](https://asciinema.org/a/PRyHaUEEju5RXcoVlHInYMtmt)
 
+**Une petite vidéo en complément pour générer des clefs de signature GPG**
+[![asciicast](https://asciinema.org/a/gK6sFsTJD1lfFCxuUNJaTLfyi.svg)](https://asciinema.org/a/gK6sFsTJD1lfFCxuUNJaTLfyi)
+
+
 ## TempShell
 Génère un nouveau fichier à partir d'un template adaptable
 pour créer de nouveaux scripts BASH.
