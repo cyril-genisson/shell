@@ -27,6 +27,7 @@ stokent dans le répertoire ~/.ssh
 ```bash
 SshKeygen KeyName
 ```
+[![asciicast](https://asciinema.org/a/PRyHaUEEju5RXcoVlHInYMtmt.svg)](https://asciinema.org/a/PRyHaUEEju5RXcoVlHInYMtmt)
 
 ## TempShell
 Génère un nouveau fichier à partir d'un template adaptable
