@@ -1,0 +1,45 @@
+#!/bin/bash
+#
+# Author: Cyril GENISSON
+# Created: 01/11/2023
+# Updated: 01/11/2023
+#
+# Description: Crée un template de fichier en .C
+#
+
+ARG=1
+AUTHOR=""
+DATE=$(date "+%d\/%m\/%Y")
+
+if [ "$#" -ne $ARG ] ; then
+	echo "Usage: $0 newfile"
+	echo $1
+	exit 1
+elif [ -f $1 ] ; then
+	echo "Le fichier $1 existe déjà!"
+	exit 1
+elif [ ! -n $(echo $AUTHOR | tr -d [[:space:]]) ] ; then
+	echo "La variable \$AUTHOR n'est pas initialisée."
+	exit 1
+fi
+
+FILENAME="$1.c"
+
+cat > $FILENAME << ENDFILE
+/*
+ * Author: AUTHOR
+ * Created: DATE
+ * Updated: DATE
+ *
+ * Filename: FILENAME
+ * Description: 
+ *
+ */
+
+ENDFILE
+
+sed -i -e "s/DATE/$DATE/g" $FILENAME
+sed -i -e "s/AUTHOR/$AUTHOR/g" $FILENAME
+sed -i -e "s/FILENAME/$FILENAME/g" $FILENAME
+
+exit 0

@@ -57,4 +57,4 @@ done
 
 # Envoie le rapport par mail à l'administrateur
 cat $REPORT | mail -s "Rapport des dumps DATABASES" $EMAIL &> /dev/null
-
+exit 9

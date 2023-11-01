@@ -119,3 +119,5 @@ done
 # @ finir pour plus tard même si ce n'est pas trop long
 tar -cvjpf $SAVE $LOGREPORT
 rm -fR $MAILDIR
+
+exit 0
